@@ -10,7 +10,7 @@ public class MonsterRespawnScheduler {
     private static final int MAX_MONSTER_COUNT = 10;
     public static class MonsterRespawnJob implements Job {
         @Override
-        public void execute(JobExecutionContext jobExecutionContext) {
+        public synchronized void execute(JobExecutionContext jobExecutionContext) {
             Field field = Field.getInstance();
             int curMonsterCount = field.countMonsters();
             if (curMonsterCount < MAX_MONSTER_COUNT) {
@@ -37,7 +37,7 @@ public class MonsterRespawnScheduler {
             scheduler.scheduleJob(jobDetail, trigger);
             scheduler.start();
         } catch (Exception e) {
-            Logger.log("스케쥴러 시작 실패.");
+            Logger.log("몬스터 리스폰 스케쥴러 시작 실패.");
         }
 
     }

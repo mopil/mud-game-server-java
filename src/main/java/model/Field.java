@@ -1,5 +1,6 @@
 package model;
 
+import lombok.Data;
 import lombok.ToString;
 
 import java.util.ArrayList;
@@ -7,9 +8,11 @@ import java.util.List;
 import java.util.Random;
 
 @ToString
+@Data
 public class Field {
+    public static final int FIELD_SIZE = 30;
     private static final Field fieldInstance = new Field();
-    private final String[][] field = new String[30][30];
+    private final String[][] field = new String[FIELD_SIZE][FIELD_SIZE];
     private List<User> loginUsers = new ArrayList<>();
     private List<Monster> monsters = new ArrayList<>();
 
@@ -18,11 +21,14 @@ public class Field {
     }
 
     private Field() {
-        for (int x = 0; x < 30; x++)
-            for (int y = 0; y < 30; y++)
+        for (int x = 0; x < FIELD_SIZE; x++)
+            for (int y = 0; y < FIELD_SIZE; y++)
                 field[x][y] = "_";
     }
 
+    /**
+     * Monster
+     */
     public synchronized int countMonsters() {
         return monsters.size();
     }
@@ -30,8 +36,8 @@ public class Field {
     public synchronized Monster generateMonster() {
         Random random = new Random();
         while (true) {
-            int x = random.nextInt(29);
-            int y = random.nextInt(29);
+            int x = random.nextInt(FIELD_SIZE - 1);
+            int y = random.nextInt(FIELD_SIZE - 1);
             if (field[x][y].equals("_")) {
                 field[x][y] = "S";
                 Monster monster = new Monster(x, y);
@@ -53,6 +59,9 @@ public class Field {
         field[x][y] = "_";
     }
 
+    /**
+     * User
+     */
     public synchronized void addUser(int x, int y, User user) {
         field[x][y] = user.username;
         loginUsers.add(user);
@@ -63,12 +72,21 @@ public class Field {
         loginUsers.remove(user);
     }
 
+    public User getUser(int x, int y) {
+        return loginUsers.stream()
+                .filter(user -> (user.x == x && user.y == y))
+                .findFirst()
+                .orElse(null);
+    }
+
     public synchronized boolean isEmpty(int x, int y) {
         return field[x][y].equals("_");
     }
+
+    // for test
     public void show() {
-        for (int x = 0; x < 30; x++) {
-            for (int y = 0; y < 30; y++) {
+        for (int x = 0; x < FIELD_SIZE; x++) {
+            for (int y = 0; y < FIELD_SIZE; y++) {
                 System.out.printf("%s\t", field[x][y]);
             }
             System.out.println();

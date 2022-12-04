@@ -5,12 +5,12 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class JsonSerializer {
-    private static final JsonSerializer jsonSerializer = new JsonSerializer();
+public class JsonConverter {
+    private static final JsonConverter JSON_CONVERTOR = new JsonConverter();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static JsonSerializer getInstance() {
-        return jsonSerializer;
+    public static JsonConverter getInstance() {
+        return JSON_CONVERTOR;
     }
 
     public String toJson(Object obj) {
