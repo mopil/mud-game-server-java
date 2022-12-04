@@ -1,5 +1,7 @@
 package model;
 
+import util.Logger;
+
 public class User {
     public String username;
     public int x;
@@ -20,20 +22,15 @@ public class User {
     }
 
     public synchronized void move(int nx, int ny) {
-        String[][] field = Field.getInstance().getField();
+        Field field = Field.getInstance();
         if (Math.abs(nx - x) > 3 || Math.abs(ny - y) > 3) {
-            System.out.println("[move error] 3이상 이동할 수 없습니다.");
-        } else if (field[nx][ny].equals("_")) {
+            Logger.log("[move error] 3이상 이동할 수 없습니다.");
+        } else if (field.get(nx, ny).equals("_")) {
             x += nx;
             y += ny;
         } else {
-            System.out.println("[move error] 해당 칸이 비어있지 않습니다.");
+            Logger.log("[move error] 해당 칸이 비어있지 않습니다.");
         }
-    }
-
-    public synchronized void attack() {
-        String[][] field = Field.getInstance().getField();
-
     }
 
 
