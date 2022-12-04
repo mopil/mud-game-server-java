@@ -41,9 +41,11 @@ dependencies {
     // lombok
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
-
     testCompileOnly 'org.projectlombok:lombok:1.18.22'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    // scheduling - quartz
+    implementation group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.0'
 }
 
 test {
