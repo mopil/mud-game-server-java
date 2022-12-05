@@ -17,22 +17,10 @@ public class TCPServer {
     private static final String SERVER_IP = "127.0.0.1";
     private static final int PORT = 7000;
     public static final int MAX_CONCURRENT_PLAYER_NUM = 30;
-//    private static final Map<String, Socket> socketList = new HashMap<>();
-//
-//    public static void setSocket(String username, Socket socket) {
-//        socketList.put(username, socket);
-//    }
-//
-//    public static Socket getSocket(String username) {
-//        return socketList.get(username);
-//    }
-//
-//    public static void removeSocket(String username) {
-//        socketList.remove(username);
-//    }
 
     public TCPServer() {
         try {
+            Redis.getInstance().clear();
             serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(SERVER_IP, PORT));
             executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_PLAYER_NUM);
@@ -64,7 +52,7 @@ public class TCPServer {
                 log.info("새로운 클라이언트 연결 감지 {}:{}", remoteHostName, remoteHostPort);
 
                 // 요청 처리 핸들러를 쓰레드 풀에 넘겨줌
-                RequestHandleTask thread = new RequestHandleTask(socket);
+                RequestHandler thread = new RequestHandler(socket);
                 executorService.execute(thread);
             }
         } catch (Exception e) {

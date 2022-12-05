@@ -25,8 +25,8 @@ public class User {
         if (Math.abs(nx - x) > 3 || Math.abs(ny - y) > 3) {
             return false;
         } else if (field.get(nx, ny).equals("_")) {
-            x += nx;
-            y += ny;
+            x = nx;
+            y = ny;
             return true;
         } else {
             return false;

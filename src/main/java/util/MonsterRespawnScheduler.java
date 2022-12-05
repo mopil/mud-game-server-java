@@ -9,7 +9,7 @@ import org.quartz.impl.StdSchedulerFactory;
 @Slf4j
 public class MonsterRespawnScheduler {
 
-    private static final int MAX_MONSTER_COUNT = 10;
+    private static final int MAX_MONSTER_COUNT = 100;
     public static class MonsterRespawnJob implements Job {
         @Override
         public synchronized void execute(JobExecutionContext jobExecutionContext) {
@@ -30,7 +30,7 @@ public class MonsterRespawnScheduler {
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity("MonsterRespawnTrigger", "group1")
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule()
-                        .withIntervalInSeconds(10)
+                        .withIntervalInSeconds(1)
                         .repeatForever())
                 .build();
 

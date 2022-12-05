@@ -1,71 +1,33 @@
 package core;
 
-import database.ChatSocketStore;
-import database.Redis;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import model.Field;
 import model.User;
 import model.dto.Request;
 import model.dto.Response;
-import util.JsonConverter;
 
-import java.io.DataOutputStream;
-import java.io.InputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 import static model.Field.FIELD_SIZE;
 import static model.dto.Response.*;
 
 @Slf4j
-public class RequestHandleTask implements Runnable {
+@RequiredArgsConstructor
+public class RequestHandler implements Runnable {
     private final Socket socket;
-    private final JsonConverter jsonConverter = JsonConverter.getInstance();
     private User currentUser;
-
-    public RequestHandleTask(Socket socket) {
-        this.socket = socket;
-    }
-
-    private Request receiveRequest() {
-        try {
-            byte[] bytes = new byte[1024];
-            InputStream is = socket.getInputStream();
-            int readSize = is.read(bytes);
-            String json = new String(bytes, StandardCharsets.UTF_8)
-                    .substring(0, readSize);
-            log.info("REQUEST <<< {}", json);
-            return jsonConverter.toObject(json, Request.class);
-        } catch (Exception e) {
-            log.warn("클라이언트로 부터 데이터 수신 실패, receive data == null : {}", e.getMessage());
-            return null;
-        }
-    }
-
-    private void sendResponse(Response response) {
-        try {
-            DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-            String jsonBody = jsonConverter.toJson(response);
-            log.info("RESPONSE >>> {}", jsonBody);
-            dataOutputStream.writeUTF(jsonBody);
-            dataOutputStream.flush();
-        } catch (Exception e) {
-            log.warn("클라이언트로 데이터 송신 실패 : {}", e.getMessage());
-        }
-    }
-
 
     @Override
     public void run() {
         try {
             while (true) {
-                Request request = receiveRequest();
+                Request request = SocketManager.receiveRequest(socket);
                 if (request == null || request.data.equals("logout")) {
                     processLogout();
                     break;
-                }
-                else if (request.type.equals("login")) processLogin(request);
+                } else if (request.type.equals("login")) processLogin(request);
                 else if (request.type.equals("cmd")) {
                     if (request.data.startsWith("chat")) processChat(request.data);
                     else processCommand(request);
@@ -99,20 +61,20 @@ public class RequestHandleTask implements Runnable {
             }
         }
         User newUser = new User(username, x, y);
-        redis.saveLoginUser(newUser, jsonConverter.toJson(newUser), 300);
+        redis.login(newUser);
         field.addUser(x, y, newUser);
         currentUser = newUser;
 
         log.info("{}님이 로그인 했습니다!", username);
-        ChatSocketStore.setSocket(username, socket);
-        sendResponse(LoginResponse(currentUser));
+        SocketManager.setSocket(username, socket);
+        SocketManager.sendResponse(socket, LoginResponse(currentUser));
     }
 
     private synchronized void processLogout() {
         Field field = Field.getInstance();
         field.clearUser(currentUser.x, currentUser.y, currentUser);
         log.info("{}님이 로그아웃 했습니다.", currentUser.username);
-        ChatSocketStore.removeSocket(currentUser.username);
+        SocketManager.removeSocket(currentUser.username);
     }
 
     private synchronized void processCommand(Request request) {
@@ -132,36 +94,31 @@ public class RequestHandleTask implements Runnable {
             String[] moveTokens = cmd.split(" ");
             int nx = Integer.parseInt(moveTokens[1]);
             int ny = Integer.parseInt(moveTokens[2]);
+            int x = currentUser.x;
+            int y = currentUser.y;
             boolean isMoved = currentUser.move(nx, ny);
             if (isMoved) {
-                response = MoveSuccessResponse(currentUser, nx, ny);
+                Field filed = Field.getInstance();
+                filed.clear(x, y);
+                filed.set(currentUser.username, nx, ny);
+                Redis.getInstance().move(currentUser, nx, ny);
+                response = MoveSuccessResponse(currentUser, x, y);
             } else {
-                response = ErrorResponse("현재 좌표 기준 3칸 이상 움직일 수 없습니다.");
+                response = ErrorResponse("그 곳으로는 이동할 수 없습니다! (다른 유저가 있거나, 몬스터가 있거나, 필드를 벗어나거나, 움직이고자 하는 칸이 현재 좌표 기준으로 3칸이 초과합니다.)");
             }
         } else response = ErrorResponse("알 수 없는 명령어 입니다.");
-        sendResponse(response);
+        SocketManager.sendResponse(socket, response);
     }
 
     public void processChat(String chatCmd) {
         String[] chatTokens = chatCmd.split(" ");
         String receiverUsername = chatTokens[1];
-        String message = chatTokens[2];
-        try {
-            Socket socket = ChatSocketStore.getSocket(receiverUsername);
-
-            if (socket == null) {
-                sendResponse(ErrorResponse(receiverUsername + "님을 찾을 수 없습니다!"));
-                return;
-            }
-
-            DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-            log.info("채팅 전송 '{}' -> '{}' [{}]", currentUser.username, receiverUsername, message);
-            message = currentUser.username + "님으로 부터 온 채팅 : " + message;
-            String json = jsonConverter.toJson(new Response(message, null));
-            dataOutputStream.writeUTF(json);
-            dataOutputStream.flush();
-        } catch (Exception e) {
-            log.warn("processChat 예외 발생 : {}", e.getMessage());
+        String message = receiverUsername + "님으로 부터 온 채팅 : " + chatTokens[2];
+        boolean result = SocketManager.sendDirectResponse(receiverUsername, message);
+        if (!result) {
+            SocketManager.sendResponse(socket, ErrorResponse(receiverUsername + "님을 찾을 수 없습니다!"));
+            return;
         }
+        log.info("채팅 전송 '{}' -> '{}' [{}]", currentUser.username, receiverUsername, message);
     }
 }

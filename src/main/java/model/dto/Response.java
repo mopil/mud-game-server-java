@@ -67,11 +67,11 @@ public class Response {
         return new Response(buffer.toString(), null);
     }
 
-    public static Response MoveSuccessResponse(User user, int nx, int ny) {
+    public static Response MoveSuccessResponse(User user, int x, int y) {
         String username = user.username;
-        int x = user.x;
-        int y = user.y;
-        return new Response(username + "이(가) 이동 했습니다. (" + x + "," + y + ") -> (" + nx + "," + ")", null);
+        int nx = user.x;
+        int ny = user.y;
+        return new Response(username + "이(가) 이동 했습니다. (" + x + "," + y + ") -> (" + nx + "," + ny + ")", null);
     }
 
     /**

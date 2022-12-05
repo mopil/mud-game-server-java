@@ -1,7 +1,11 @@
 package model;
 
 
+import core.SocketManager;
+
 import java.util.Random;
+
+import static model.Field.FIELD_SIZE;
 
 public class Monster {
     public int x;
@@ -26,9 +30,17 @@ public class Monster {
         for (int i = 0; i < 8; i++) {
             int nx = dx[i] + x;
             int ny = dy[i] + y;
+            if (nx < 0 || nx >= FIELD_SIZE || ny < 0 || ny >= FIELD_SIZE) continue;
             if (!field.get(nx, ny).equals("_") && !field.get(nx, ny).equals("S")) {
                 User user = field.getUser(nx, ny);
                 user.hp -= str;
+                String message = "\n\"슬라임\"이 \"" + user.username + "\"을 공격해서 데미지 " + str + "을/를 가했습니다!";
+                String message2 = " (" + user.username + "의 남은 hp:" + user.hp + ")";
+                SocketManager.sendDirectResponse(user.username, message + message2);
+                if (user.hp <= 0) {
+                    SocketManager.sendDirectResponse(user.username, "hp가 0이 되어서 사망했습니다.. 게임을 종료합니다.");
+                    SocketManager.disconnect(user.username);
+                }
             }
         }
     }
