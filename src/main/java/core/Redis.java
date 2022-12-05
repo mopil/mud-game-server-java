@@ -7,38 +7,55 @@ import redis.clients.jedis.Jedis;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Redis {
-    private static final Redis redis = new Redis();
     private static final Jedis jedis = new Jedis("localhost", 6379);
-
-    public static Redis getInstance() {
-        return redis;
-    }
-
     private static final String USER_PREFIX = "USER:";
     private static final String STATUS_PREFIX = "STATUS:";
 
-    public void login(User user) {
-        String key = USER_PREFIX + user.username;
-        jedis.set(key + ":hp",  Integer.toString(user.hp));
-        jedis.set(key + ":str",  Integer.toString(user.str));
-        jedis.set(key + ":x",  Integer.toString(user.x));
-        jedis.set(key + ":y",  Integer.toString(user.y));
-        jedis.set(key + ":hpPotionCount",  Integer.toString(user.hpPotionCount));
-        jedis.set(key + ":strPotionCount",  Integer.toString(user.strPotionCount));
+    private static class RedisSingletonHelper {
+        private static final Redis INSTANCE = new Redis();
     }
 
-    public void logout(User user) {
-        String key = USER_PREFIX + user.username;
-        int liveSecs = 300;
-        jedis.expire(key + ":hp", liveSecs);
-        jedis.expire(key + ":str",  liveSecs);
-        jedis.expire(key + ":x",  liveSecs);
-        jedis.expire(key + ":y",  liveSecs);
-        jedis.expire(key + ":hpPotionCount",  liveSecs);
-        jedis.expire(key + ":strPotionCount",  liveSecs);
+    public static Redis getInstance() {
+        return RedisSingletonHelper.INSTANCE;
     }
 
-    public void move(User user, int x, int y) {
+    public void saveUser(User user) {
+        String key = USER_PREFIX + user.username;
+        jedis.set(key + ":hp", Integer.toString(user.hp));
+        jedis.set(key + ":str", Integer.toString(user.str));
+        jedis.set(key + ":x", Integer.toString(user.x));
+        jedis.set(key + ":y", Integer.toString(user.y));
+        jedis.set(key + ":hpPotionCount", Integer.toString(user.hpPotionCount));
+        jedis.set(key + ":strPotionCount", Integer.toString(user.strPotionCount));
+    }
+
+    public void deleteUser(User user, int liveSeconds) {
+        String key = USER_PREFIX + user.username;
+        jedis.expire(key + ":hp", liveSeconds);
+        jedis.expire(key + ":str", liveSeconds);
+        jedis.expire(key + ":x", liveSeconds);
+        jedis.expire(key + ":y", liveSeconds);
+        jedis.expire(key + ":hpPotionCount", liveSeconds);
+        jedis.expire(key + ":strPotionCount", liveSeconds);
+    }
+
+    public String getUserInfo(User user) {
+        String key = USER_PREFIX + user.username;
+        String hp = jedis.get(key + ":hp");
+        String str = jedis.get(key + ":str");
+        String x = jedis.get(key + ":x");
+        String y = jedis.get(key + ":y");
+        String hpPotionCount = jedis.get(key + ":hpPotionCount");
+        String strPotionCount = jedis.get(key + ":strPotionCount");
+        return "이름:" + user.username +
+                " / hp:" + hp +
+                " / str:" + str +
+                " / 현위치:(" + x + "," + y + ")" +
+                " / HP포션:" + hpPotionCount + "개" +
+                " / STR포션:" + strPotionCount + "개";
+    }
+
+    public void updateUserPosition(User user, int x, int y) {
         String key = USER_PREFIX + user.username;
         jedis.del(key + ":x");
         jedis.del(key + ":y");
@@ -46,9 +63,28 @@ public class Redis {
         jedis.set(key + ":y", Integer.toString(y));
     }
 
-    public void minusHp(User user, int amount) {
+    public void updateUserHp(User user, String type, int amount) {
         String key = USER_PREFIX + user.username + ":hp";
-        jedis.decrBy(key, amount);
+        if (type.equals("up")) jedis.incrBy(key, amount);
+        else if (type.equals("down")) jedis.decrBy(key, amount);
+    }
+
+    public void updateUserPotionCount(User user, String potionType, String upDownType) {
+        String key = USER_PREFIX + user.username;
+        switch (potionType) {
+            case "hp": key += ":hpPotionCount";
+            break;
+            case "str": key += ":strPotionCount";
+            break;
+        }
+        if (upDownType.equals("up")) jedis.incrBy(key, 1);
+        else if (upDownType.equals("down")) jedis.decrBy(key, 1);
+    }
+
+    public void updateUserStr(User user, String upDownType) {
+        String key = USER_PREFIX + user.username + ":str";
+        if (upDownType.equals("up")) jedis.incrBy(key, 3);
+        else if (upDownType.equals("down")) jedis.decrBy(key, 3);
     }
 
     public void setStatStrPotion(String username) {
@@ -60,7 +96,7 @@ public class Redis {
         jedis.setex(statKey, 60, "str");
     }
 
-    public void clear() {
+    public void deleteAllKeys() {
         jedis.flushAll();
     }
 }

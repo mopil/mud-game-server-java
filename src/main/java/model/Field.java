@@ -11,13 +11,16 @@ import java.util.Random;
 @Data
 public class Field {
     public static final int FIELD_SIZE = 30;
-    private static final Field fieldInstance = new Field();
     private final String[][] field = new String[FIELD_SIZE][FIELD_SIZE];
     private List<User> loginUsers = new ArrayList<>();
     private List<Monster> monsters = new ArrayList<>();
 
-    public static synchronized Field getInstance() {
-        return fieldInstance;
+    private static class FieldSingletonHelper {
+        private static final Field INSTANCE = new Field();
+    }
+
+    public static Field getInstance() {
+        return FieldSingletonHelper.INSTANCE;
     }
 
     private Field() {
@@ -47,6 +50,11 @@ public class Field {
         }
     }
 
+    public synchronized void deleteMonster(Monster monster) {
+        monsters.remove(monster);
+        clear(monster.x, monster.y);
+    }
+
     public synchronized String get(int x, int y) {
         return field[x][y];
     }
@@ -67,8 +75,8 @@ public class Field {
         loginUsers.add(user);
     }
 
-    public synchronized void clearUser(int x, int y, User user) {
-        field[x][y] = "_";
+    public synchronized void deleteUser(User user) {
+        field[user.x][user.y] = "_";
         loginUsers.remove(user);
     }
 

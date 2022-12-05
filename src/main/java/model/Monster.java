@@ -1,6 +1,7 @@
 package model;
 
 
+import core.Redis;
 import core.SocketManager;
 
 import java.util.Random;
@@ -25,6 +26,7 @@ public class Monster {
 
     public void attack() {
         Field field = Field.getInstance();
+        Redis redis = Redis.getInstance();
         int[] dx = {0, 0, -1, 1, -1, 1, 1, -1};
         int[] dy = {1, -1, 0, 0, 1, -1, 1, -1};
         for (int i = 0; i < 8; i++) {
@@ -34,12 +36,14 @@ public class Monster {
             if (!field.get(nx, ny).equals("_") && !field.get(nx, ny).equals("S")) {
                 User user = field.getUser(nx, ny);
                 user.hp -= str;
+                Redis.getInstance().updateUserHp(user, "down", str);
                 String message = "\n\"슬라임\"이 \"" + user.username + "\"을 공격해서 데미지 " + str + "을/를 가했습니다!";
                 String message2 = " (" + user.username + "의 남은 hp:" + user.hp + ")";
                 SocketManager.sendDirectResponse(user.username, message + message2);
                 if (user.hp <= 0) {
                     SocketManager.sendDirectResponse(user.username, "hp가 0이 되어서 사망했습니다.. 게임을 종료합니다.");
                     SocketManager.disconnect(user.username);
+                    redis.deleteUser(user, 0);
                 }
             }
         }

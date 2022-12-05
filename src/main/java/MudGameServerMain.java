@@ -4,7 +4,7 @@ import util.MonsterRespawnScheduler;
 
 public class MudGameServerMain {
     public static void main(String[] args) {
-        TCPServer tcpServer = new TCPServer();
+        TCPServer tcpServer = TCPServer.getInstance();
         MonsterRespawnScheduler.start();
         MonsterAttackScheduler.start();
         tcpServer.start();

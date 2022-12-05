@@ -18,9 +18,17 @@ public class TCPServer {
     private static final int PORT = 7000;
     public static final int MAX_CONCURRENT_PLAYER_NUM = 30;
 
-    public TCPServer() {
+    private static class SingletonHelper {
+        private static final TCPServer INSTANCE = new TCPServer();
+    }
+
+    public static TCPServer getInstance() {
+        return SingletonHelper.INSTANCE;
+    }
+
+    private TCPServer() {
         try {
-            Redis.getInstance().clear();
+            Redis.getInstance().deleteAllKeys();
             serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(SERVER_IP, PORT));
             executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_PLAYER_NUM);

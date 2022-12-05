@@ -1,5 +1,6 @@
 package model.dto;
 
+import core.Redis;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -51,6 +52,11 @@ public class Response {
         }
         buffer.append(" ]");
         return new Response(buffer.toString(), null);
+    }
+
+    public static Response UserInfoResponse(User user) {
+        String message = Redis.getInstance().getUserInfo(user);
+        return new Response(message, null);
     }
 
     public static Response MonsterListResponse() {

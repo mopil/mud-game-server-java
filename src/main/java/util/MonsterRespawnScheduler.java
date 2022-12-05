@@ -1,5 +1,7 @@
 package util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import model.Field;
 import model.Monster;
@@ -7,6 +9,7 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MonsterRespawnScheduler {
 
     private static final int MAX_MONSTER_COUNT = 100;
