@@ -3,7 +3,9 @@ package util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JsonConverter {
     private static final JsonConverter JSON_CONVERTOR = new JsonConverter();
@@ -17,7 +19,7 @@ public class JsonConverter {
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (Exception e) {
-            Logger.log("JSON 직렬화 오류.");
+            log.warn("JSON 직렬화 오류 : {}", e.getMessage());
             return null;
         }
     }
@@ -26,7 +28,7 @@ public class JsonConverter {
         try {
             return objectMapper.readValue(json, target);
         } catch (Exception e) {
-            Logger.log("JSON 역직렬화 오류.");
+            log.warn("JSON 역직렬화 오류 : {}", e.getMessage());
             return null;
         }
     }

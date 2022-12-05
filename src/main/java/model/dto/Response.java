@@ -15,7 +15,7 @@ import static model.Field.FIELD_SIZE;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ResponseDto {
+public class Response {
     String message;
     List<Coordinate> coords;
 
@@ -31,15 +31,15 @@ public class ResponseDto {
         return coords;
     }
 
-    public static ResponseDto LoginResponse(User user) {
-        return new ResponseDto(user.username + "님이 로그인 했습니다! 현재 좌표 (" + user.x + "," + user.y + ")", makeCoords());
+    public static Response LoginResponse(User user) {
+        return new Response(user.username + "님이 로그인 했습니다! 현재 좌표 (" + user.x + "," + user.y + ")", makeCoords());
     }
 
-    public static ResponseDto FieldResponse() {
-        return new ResponseDto(null, makeCoords());
+    public static Response FieldResponse() {
+        return new Response(null, makeCoords());
     }
 
-    public static ResponseDto UserListResponse() {
+    public static Response UserListResponse() {
         Field field = Field.getInstance();
         StringBuffer buffer = new StringBuffer();
         buffer.append("접속 유저 좌표 : [ ");
@@ -50,10 +50,10 @@ public class ResponseDto {
             }
         }
         buffer.append(" ]");
-        return new ResponseDto(buffer.toString(), null);
+        return new Response(buffer.toString(), null);
     }
 
-    public static ResponseDto MonsterListResponse() {
+    public static Response MonsterListResponse() {
         Field field = Field.getInstance();
         StringBuffer buffer = new StringBuffer();
         buffer.append("슬라임 좌표 : [ ");
@@ -64,21 +64,21 @@ public class ResponseDto {
             }
         }
         buffer.append(" ]");
-        return new ResponseDto(buffer.toString(), null);
+        return new Response(buffer.toString(), null);
     }
 
-    public static ResponseDto MoveSuccessResponse(User user, int nx, int ny) {
+    public static Response MoveSuccessResponse(User user, int nx, int ny) {
         String username = user.username;
         int x = user.x;
         int y = user.y;
-        return new ResponseDto(username + "이(가) 이동 했습니다. (" + x + "," + y + ") -> (" + nx + "," + ")", null);
+        return new Response(username + "이(가) 이동 했습니다. (" + x + "," + y + ") -> (" + nx + "," + ")", null);
     }
 
     /**
      * Error
      */
-    public static ResponseDto ErrorResponse(String errorMessage) {
-        return new ResponseDto(errorMessage, null);
+    public static Response ErrorResponse(String errorMessage) {
+        return new Response(errorMessage, null);
     }
 
 }

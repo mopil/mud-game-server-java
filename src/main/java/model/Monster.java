@@ -1,6 +1,5 @@
 package model;
 
-import util.Logger;
 
 import java.util.Random;
 
@@ -30,7 +29,6 @@ public class Monster {
             if (!field.get(nx, ny).equals("_") && !field.get(nx, ny).equals("S")) {
                 User user = field.getUser(nx, ny);
                 user.hp -= str;
-                Logger.log(user.username + "이 공격 받았습니다! 체력 -" + str);
             }
         }
     }
