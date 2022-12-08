@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static core.GlobalConfig.MAX_TEMP_BYTES;
+import static model.dto.Response.ErrorResponse;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -70,6 +71,10 @@ public class SocketManager {
         } catch (Exception e) {
             log.warn("클라이언트로 데이터 송신 실패 : {}", e.getMessage());
         }
+    }
+
+    public static void sendError(Socket receiverSocket) {
+        sendResponse(receiverSocket, ErrorResponse("알 수 없는 명령어 입니다."));
     }
 
     public static void disconnect(String username) {

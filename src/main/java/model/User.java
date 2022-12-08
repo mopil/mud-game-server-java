@@ -35,7 +35,7 @@ public class User {
         Field field = Field.getInstance();
         if (Math.abs(nx - x) > USER_MAX_MOVE_AMOUNT || Math.abs(ny - y) > USER_MAX_MOVE_AMOUNT) {
             return false;
-        } else if (field.get(nx, ny).equals("_")) {
+        } else if (field.get(nx, ny).equals(EMPTY_FIELD)) {
             field.clear(x, y);
             x = nx;
             y = ny;
@@ -73,10 +73,10 @@ public class User {
                         field.deleteMonster(monster);
                         if (monster.potion == 0) {
                             winMessage += " HP 포션 1개를 전리품으로 획득하였습니다!";
-                            redis.updateUserPotionCount(this, "hp", "up");
+                            redis.updateUserPotionCount(this, "hp", hpPotionCount++);
                         } else {
                             winMessage += " STR 포션 1개를 전리품으로 획득하였습니다!";
-                            redis.updateUserPotionCount(this, "str", "up");
+                            redis.updateUserPotionCount(this, "str", strPotionCount++);
                         }
                         SocketManager.sendDirectResponse(username, winMessage);
                     }

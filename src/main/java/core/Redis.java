@@ -23,11 +23,6 @@ public class Redis {
         return RedisSingletonHelper.INSTANCE;
     }
 
-    public boolean existsUser(String username) {
-        String key = USER_PREFIX + username + ":hp";
-        return jedis.exists(key);
-    }
-
     public void saveUser(User user) {
         String key = USER_PREFIX + user.username;
         jedis.hset(key, "username", user.username);
@@ -81,7 +76,7 @@ public class Redis {
     public void updateUserPosition(User user, int x, int y) {
         String key = USER_PREFIX + user.username;
         jedis.hset(key, "x", Integer.toString(x));
-        jedis.hset(key, "y", Integer.toString(x));
+        jedis.hset(key, "y", Integer.toString(y));
     }
 
     public void updateUserHp(User user, String type, int amount) {
@@ -90,16 +85,9 @@ public class Redis {
         jedis.hincrBy(key, "hp", amount);
     }
 
-    public void updateUserPotionCount(User user, String potionType, String upDownType) {
+    public void updateUserPotionCount(User user, String potionType, int amount) {
         String key = USER_PREFIX + user.username;
-        switch (potionType) {
-            case "hp": key += ":hpPotionCount";
-            break;
-            case "str": key += ":strPotionCount";
-            break;
-        }
-        if (upDownType.equals("up")) jedis.incrBy(key, 1);
-        else if (upDownType.equals("down")) jedis.decrBy(key, 1);
+        jedis.hset(key, potionType + "PotionCount", Integer.toString(amount));
     }
 
     public void updateUserStr(User user, String upDownType) {
