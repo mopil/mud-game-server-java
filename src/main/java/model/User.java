@@ -6,7 +6,7 @@ import core.SocketManager;
 
 import java.util.Optional;
 
-import static model.Field.FIELD_SIZE;
+import static core.GlobalConfig.*;
 
 public class User {
     public String username;
@@ -21,15 +21,15 @@ public class User {
         this.username = username;
         this.x = x;
         this.y = y;
-        this.hp = 30;
-        this.str = 3;
-        this.hpPotionCount = 1;
-        this.strPotionCount = 1;
+        this.hp = USER_DEFAULT_HP;
+        this.str = USER_DEFAULT_STR;
+        this.hpPotionCount = USER_DEFAULT_POTION_COUNT;
+        this.strPotionCount = USER_DEFAULT_POTION_COUNT;
     }
 
     public boolean move(int nx, int ny) {
         Field field = Field.getInstance();
-        if (Math.abs(nx - x) > 3 || Math.abs(ny - y) > 3) {
+        if (Math.abs(nx - x) > USER_MAX_MOVE_AMOUNT || Math.abs(ny - y) > USER_MAX_MOVE_AMOUNT) {
             return false;
         } else if (field.get(nx, ny).equals("_")) {
             field.clear(x, y);
@@ -48,13 +48,11 @@ public class User {
         boolean isAttacked = false;
         Field field = Field.getInstance();
         Redis redis = Redis.getInstance();
-        int[] dx = {0, 0, -1, 1, -1, 1, 1, -1};
-        int[] dy = {1, -1, 0, 0, 1, -1, 1, -1};
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < ATTACK_RANGE; i++) {
             int nx = dx[i] + x;
             int ny = dy[i] + y;
             if (nx < 0 || nx >= FIELD_SIZE || ny < 0 || ny >= FIELD_SIZE) continue;
-            if (field.get(nx, ny).equals("S")) {
+            if (field.get(nx, ny).equals(MONSTER_MARK)) {
                 Optional<Monster> optionalMonster = field.getMonsters()
                         .stream()
                         .filter(it -> it.x == nx && it.y == ny)

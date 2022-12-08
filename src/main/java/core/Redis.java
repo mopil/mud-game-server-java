@@ -5,9 +5,12 @@ import lombok.NoArgsConstructor;
 import model.User;
 import redis.clients.jedis.Jedis;
 
+import static core.GlobalConfig.REDIS_IP;
+import static core.GlobalConfig.REDIS_PORT;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Redis {
-    private static final Jedis jedis = new Jedis("localhost", 6379);
+    private static final Jedis jedis = new Jedis(REDIS_IP, REDIS_PORT);
     private static final String USER_PREFIX = "USER:";
     private static final String STATUS_PREFIX = "STATUS:";
 
@@ -17,6 +20,11 @@ public class Redis {
 
     public static Redis getInstance() {
         return RedisSingletonHelper.INSTANCE;
+    }
+
+    public boolean existsUser(String username) {
+        String key = USER_PREFIX + username + ":hp";
+        return jedis.exists(key);
     }
 
     public void saveUser(User user) {

@@ -6,7 +6,7 @@ import core.SocketManager;
 
 import java.util.Random;
 
-import static model.Field.FIELD_SIZE;
+import static core.GlobalConfig.*;
 
 public class Monster {
     public int x;
@@ -27,13 +27,11 @@ public class Monster {
     public void attack() {
         Field field = Field.getInstance();
         Redis redis = Redis.getInstance();
-        int[] dx = {0, 0, -1, 1, -1, 1, 1, -1};
-        int[] dy = {1, -1, 0, 0, 1, -1, 1, -1};
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < ATTACK_RANGE; i++) {
             int nx = dx[i] + x;
             int ny = dy[i] + y;
             if (nx < 0 || nx >= FIELD_SIZE || ny < 0 || ny >= FIELD_SIZE) continue;
-            if (!field.get(nx, ny).equals("_") && !field.get(nx, ny).equals("S")) {
+            if (!field.get(nx, ny).equals(EMPTY_FIELD) && !field.get(nx, ny).equals(MONSTER_MARK)) {
                 User user = field.getUser(nx, ny);
                 user.hp -= str;
                 Redis.getInstance().updateUserHp(user, "down", str);

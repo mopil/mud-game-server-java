@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.net.Socket;
 import java.util.Random;
 
+import static core.GlobalConfig.LOGIN_DURATION_SECS;
 import static model.Field.FIELD_SIZE;
 import static model.dto.Response.*;
 
@@ -42,17 +43,22 @@ public class RequestHandler implements Runnable {
             }
         } catch (Exception e) {
             log.warn("요청 처리중 예외 발생. 요청 처리 스레드를 종료합니다. : {}", e.getMessage());
-        } finally {
-            try {
-                if (socket != null && !socket.isClosed()) socket.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
+//        } finally {
+//            try {
+//                if (socket != null && !socket.isClosed()) socket.close();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     private synchronized void processLogin(Request request) {
         String username = request.data;
+        if (redis.existsUser(username)) {
+            SocketManager.sendDirectResponse(username, username + "님! 돌아오셨군요! 환영합니다!");
+            return;
+        }
         Random random = new Random();
         int x;
         int y;
@@ -77,9 +83,9 @@ public class RequestHandler implements Runnable {
 
     private synchronized void processLogout() {
         field.deleteUser(currentUser);
-        redis.deleteUser(currentUser, 300);
+        redis.deleteUser(currentUser, LOGIN_DURATION_SECS);
         log.info("{}님이 로그아웃 했습니다.", currentUser.username);
-        SocketManager.removeSocket(currentUser.username);
+//        SocketManager.removeSocket(currentUser.username);
     }
 
     private synchronized void processCommand(Request request) {

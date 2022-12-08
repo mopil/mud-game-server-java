@@ -10,13 +10,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static core.GlobalConfig.*;
+
 @Slf4j
 public class TCPServer {
     private ServerSocket serverSocket;
     private ExecutorService executorService;
-    private static final String SERVER_IP = "127.0.0.1";
-    private static final int PORT = 7000;
-    public static final int MAX_CONCURRENT_PLAYER_NUM = 30;
 
     private static class SingletonHelper {
         private static final TCPServer INSTANCE = new TCPServer();
@@ -30,7 +29,7 @@ public class TCPServer {
         try {
             Redis.getInstance().deleteAllKeys();
             serverSocket = new ServerSocket();
-            serverSocket.bind(new InetSocketAddress(SERVER_IP, PORT));
+            serverSocket.bind(new InetSocketAddress(SERVER_IP, SERVER_PORT));
             executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_PLAYER_NUM);
         } catch (Exception e) {
             log.error("TCPServer 생성중 예외 발생, 서버를 강제 종료합니다. : {}", e.getMessage());

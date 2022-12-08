@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static core.GlobalConfig.MAX_TEMP_BYTES;
+
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SocketManager {
@@ -28,13 +30,10 @@ public class SocketManager {
         return socketList.get(username);
     }
 
-    public static void removeSocket(String username) {
-        socketList.remove(username);
-    }
 
     public static Request receiveRequest(Socket socket) {
         try {
-            byte[] bytes = new byte[1024];
+            byte[] bytes = new byte[MAX_TEMP_BYTES];
             InputStream is = socket.getInputStream();
             int readSize = is.read(bytes);
             String json = new String(bytes, StandardCharsets.UTF_8)

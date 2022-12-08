@@ -7,10 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static core.GlobalConfig.FIELD_SIZE;
+
 @ToString
 @Data
 public class Field {
-    public static final int FIELD_SIZE = 30;
     private final String[][] field = new String[FIELD_SIZE][FIELD_SIZE];
     private List<User> loginUsers = new ArrayList<>();
     private List<Monster> monsters = new ArrayList<>();

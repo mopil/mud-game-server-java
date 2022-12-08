@@ -11,7 +11,7 @@ import model.User;
 import java.util.ArrayList;
 import java.util.List;
 
-import static model.Field.FIELD_SIZE;
+import static core.GlobalConfig.*;
 
 @Data
 @AllArgsConstructor
@@ -23,9 +23,9 @@ public class Response {
     private static List<Coordinate> makeCoords() {
         Field field = Field.getInstance();
         List<Coordinate> coords = new ArrayList<>();
-        for (int x = 0; x < 30; x++) {
-            for (int y = 0; y < 30; y++) {
-                if (field.get(x, y).equals("_")) continue;
+        for (int x = 0; x < FIELD_SIZE; x++) {
+            for (int y = 0; y < FIELD_SIZE; y++) {
+                if (field.get(x, y).equals(EMPTY_FIELD)) continue;
                 coords.add(new Coordinate(field.get(x, y), x, y));
             }
         }
@@ -46,7 +46,7 @@ public class Response {
         buffer.append("접속 유저 좌표 : [ ");
         for (int x = 0; x < FIELD_SIZE; x++) {
             for (int y = 0; y < FIELD_SIZE; y++) {
-                if (field.get(x, y).equals("_") || field.get(x, y).equals("S")) continue;
+                if (field.get(x, y).equals(EMPTY_FIELD) || field.get(x, y).equals(MONSTER_MARK)) continue;
                 buffer.append(field.get(x, y)).append("(").append(x).append(",").append(y).append(") ");
             }
         }
@@ -65,7 +65,7 @@ public class Response {
         buffer.append("슬라임 좌표 : [ ");
         for (int x = 0; x < FIELD_SIZE; x++) {
             for (int y = 0; y < FIELD_SIZE; y++) {
-                if (field.get(x, y).equals("S"))
+                if (field.get(x, y).equals(MONSTER_MARK))
                     buffer.append("(").append(x).append(",").append(y).append(") ");
             }
         }

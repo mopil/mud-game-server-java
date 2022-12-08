@@ -10,6 +10,8 @@ import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.List;
 
+import static core.GlobalConfig.ATTACK_CYCLE_SECS;
+
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MonsterAttackScheduler {
@@ -34,7 +36,7 @@ public class MonsterAttackScheduler {
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity("MonsterAttackTrigger", "group2")
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule()
-                        .withIntervalInSeconds(5)
+                        .withIntervalInSeconds(ATTACK_CYCLE_SECS)
                         .repeatForever())
                 .build();
 
