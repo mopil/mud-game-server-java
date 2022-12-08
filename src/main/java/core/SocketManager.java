@@ -73,10 +73,6 @@ public class SocketManager {
     }
 
     public static void disconnect(String username) {
-        Socket socket = SocketManager.getSocket(username);
-        try {
-            socketList.remove(username);
-            socket.close();
-        } catch (Exception ignored) {}
+        socketList.remove(username);
     }
 }

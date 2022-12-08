@@ -6,8 +6,9 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
-import static core.GlobalConfig.FIELD_SIZE;
+import static core.GlobalConfig.*;
 
 @ToString
 @Data
@@ -27,7 +28,7 @@ public class Field {
     private Field() {
         for (int x = 0; x < FIELD_SIZE; x++)
             for (int y = 0; y < FIELD_SIZE; y++)
-                field[x][y] = "_";
+                field[x][y] = EMPTY_FIELD;
     }
 
     /**
@@ -42,8 +43,8 @@ public class Field {
         while (true) {
             int x = random.nextInt(FIELD_SIZE - 1);
             int y = random.nextInt(FIELD_SIZE - 1);
-            if (field[x][y].equals("_")) {
-                field[x][y] = "S";
+            if (field[x][y].equals(EMPTY_FIELD)) {
+                field[x][y] = MONSTER_MARK;
                 Monster monster = new Monster(x, y);
                 monsters.add(monster);
                 return monster;
@@ -65,7 +66,7 @@ public class Field {
     }
 
     public synchronized void clear(int x, int y) {
-        field[x][y] = "_";
+        field[x][y] = EMPTY_FIELD;
     }
 
     /**
@@ -76,8 +77,8 @@ public class Field {
         loginUsers.add(user);
     }
 
-    public synchronized void deleteUser(User user) {
-        field[user.x][user.y] = "_";
+    public void deleteUser(User user) {
+        field[user.x][user.y] = EMPTY_FIELD;
         loginUsers.remove(user);
     }
 
@@ -88,8 +89,22 @@ public class Field {
                 .orElse(null);
     }
 
+    public User getUser(String username) {
+        return loginUsers.stream()
+                .filter(user -> (user.username.equals(username)))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public List<String> getLoginUsernames() {
+        return getLoginUsers()
+                .stream()
+                .map(it -> it.username)
+                .collect(Collectors.toList());
+    }
+
     public synchronized boolean isEmpty(int x, int y) {
-        return field[x][y].equals("_");
+        return field[x][y].equals(EMPTY_FIELD);
     }
 
     // for test

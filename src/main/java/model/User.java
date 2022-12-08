@@ -3,11 +3,15 @@ package model;
 
 import core.Redis;
 import core.SocketManager;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 import java.util.Optional;
 
 import static core.GlobalConfig.*;
 
+@Builder
+@AllArgsConstructor
 public class User {
     public String username;
     public int x;

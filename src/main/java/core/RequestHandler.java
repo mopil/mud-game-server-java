@@ -11,15 +11,16 @@ import org.jetbrains.annotations.NotNull;
 import java.net.Socket;
 import java.util.Random;
 
+import static core.GlobalConfig.FIELD_SIZE;
 import static core.GlobalConfig.LOGIN_DURATION_SECS;
-import static model.Field.FIELD_SIZE;
 import static model.dto.Response.*;
 
 @Slf4j
 @RequiredArgsConstructor
-public class RequestHandler implements Runnable {
-    private final Socket socket;
+public class RequestHandler extends Thread {
+    private final Socket clientSocket;
     private User currentUser;
+
     private final Redis redis = Redis.getInstance();
     private final Field field = Field.getInstance();
 
@@ -27,7 +28,7 @@ public class RequestHandler implements Runnable {
     public void run() {
         try {
             while (true) {
-                Request request = SocketManager.receiveRequest(socket);
+                Request request = SocketManager.receiveRequest(clientSocket);
                 if (request == null || request.data.equals("logout")) {
                     processLogout();
                     break;
@@ -44,19 +45,17 @@ public class RequestHandler implements Runnable {
         } catch (Exception e) {
             log.warn("요청 처리중 예외 발생. 요청 처리 스레드를 종료합니다. : {}", e.getMessage());
         }
-//        } finally {
-//            try {
-//                if (socket != null && !socket.isClosed()) socket.close();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
     }
 
     private synchronized void processLogin(Request request) {
         String username = request.data;
-        if (redis.existsUser(username)) {
-            SocketManager.sendDirectResponse(username, username + "님! 돌아오셨군요! 환영합니다!");
+        User existingUser = redis.getUser(username);
+        if (existingUser != null) {
+            field.show();
+            currentUser = existingUser;
+            field.addUser(existingUser.x, existingUser.y, existingUser);
+            SocketManager.setSocket(username, clientSocket);
+            SocketManager.sendResponse(clientSocket, LoginResponse(existingUser, false));
             return;
         }
         Random random = new Random();
@@ -77,15 +76,17 @@ public class RequestHandler implements Runnable {
         currentUser = newUser;
 
         log.info("{}님이 로그인 했습니다!", username);
-        SocketManager.setSocket(username, socket);
-        SocketManager.sendResponse(socket, LoginResponse(currentUser));
+        log.info("현재 접속 유저 : {}", field.getLoginUsernames());
+        SocketManager.setSocket(username, clientSocket);
+        SocketManager.sendResponse(clientSocket, LoginResponse(currentUser, true));
     }
 
     private synchronized void processLogout() {
         field.deleteUser(currentUser);
         redis.deleteUser(currentUser, LOGIN_DURATION_SECS);
+        SocketManager.disconnect(currentUser.username);
         log.info("{}님이 로그아웃 했습니다.", currentUser.username);
-//        SocketManager.removeSocket(currentUser.username);
+        log.info("현재 접속 유저 : {}", field.getLoginUsernames());
     }
 
     private synchronized void processCommand(Request request) {
@@ -110,7 +111,7 @@ public class RequestHandler implements Runnable {
         } else {
             response = ErrorResponse("알 수 없는 명령어 입니다.");
         }
-        SocketManager.sendResponse(socket, response);
+        SocketManager.sendResponse(clientSocket, response);
     }
 
     @NotNull
@@ -140,7 +141,7 @@ public class RequestHandler implements Runnable {
         String message = receiverUsername + "님으로 부터 온 채팅 : " + chatTokens[2];
         boolean result = SocketManager.sendDirectResponse(receiverUsername, message);
         if (!result) {
-            SocketManager.sendResponse(socket, ErrorResponse(receiverUsername + "님을 찾을 수 없습니다!"));
+            SocketManager.sendResponse(clientSocket, ErrorResponse(receiverUsername + "님을 찾을 수 없습니다!"));
             return;
         }
         log.info("채팅 전송 '{}' -> '{}' [{}]", currentUser.username, receiverUsername, message);
@@ -173,7 +174,7 @@ public class RequestHandler implements Runnable {
                 }
                 break;
             default:
-                SocketManager.sendResponse(socket, ErrorResponse("알 수 없는 명령어 입니다."));
+                SocketManager.sendResponse(clientSocket, ErrorResponse("알 수 없는 명령어 입니다."));
                 break;
         }
     }

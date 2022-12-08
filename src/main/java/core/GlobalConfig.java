@@ -20,7 +20,7 @@ public class GlobalConfig {
 
     // Field
     public static final String EMPTY_FIELD = "_";
-    public static final int FIELD_SIZE = 30;
+    public static final int FIELD_SIZE = 5;
 
     // 공격을 위한 8방향 배열
     public static final int[] dx = {0, 0, -1, 1, -1, 1, 1, -1};

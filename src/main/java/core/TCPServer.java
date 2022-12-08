@@ -42,24 +42,24 @@ public class TCPServer {
         log.info("MUD 게임 서버 ON - 요청 대기 중");
         try {
             while (true) {
-                Socket socket = serverSocket.accept();
+                Socket clientSocket = serverSocket.accept();
 
                 ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executorService;
                 int curUserNum = threadPoolExecutor.getPoolSize();
 
                 if (curUserNum >= MAX_CONCURRENT_PLAYER_NUM) {
                     log.info("MUD 게임 서버는 최대 {}명의 유저만 동시 접속 가능합니다. 클라이언트 연결을 종료합니다.", MAX_CONCURRENT_PLAYER_NUM);
-                    socket.close();
+                    clientSocket.close();
                 }
 
                 InetSocketAddress remoteSocketAddress =
-                        (InetSocketAddress) socket.getRemoteSocketAddress();
+                        (InetSocketAddress) clientSocket.getRemoteSocketAddress();
                 String remoteHostName = remoteSocketAddress.getAddress().getHostAddress();
                 int remoteHostPort = remoteSocketAddress.getPort();
                 log.info("새로운 클라이언트 연결 감지 {}:{}", remoteHostName, remoteHostPort);
 
                 // 요청 처리 핸들러를 쓰레드 풀에 넘겨줌
-                RequestHandler thread = new RequestHandler(socket);
+                RequestHandler thread = new RequestHandler(clientSocket);
                 executorService.execute(thread);
             }
         } catch (Exception e) {
