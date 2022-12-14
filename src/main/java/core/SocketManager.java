@@ -30,6 +30,9 @@ public class SocketManager {
     public static Socket getSocket(String username) {
         return socketList.get(username);
     }
+    public static Socket removeSocket(String username) {
+        return socketList.remove(username);
+    }
 
 
     public static Request receiveRequest(Socket socket) {

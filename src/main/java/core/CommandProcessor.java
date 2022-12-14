@@ -29,11 +29,10 @@ public class CommandProcessor {
         String username = request.data;
         User existingUser = redis.getUser(username);
         if (existingUser != null) {
-            field.show();
             currentUser = existingUser;
             field.addUser(existingUser.x, existingUser.y, existingUser);
             SocketManager.setSocket(username, clientSocket);
-            SocketManager.sendResponse(clientSocket, LoginResponse(existingUser, false));
+            SocketManager.sendResponse(clientSocket, LoginResponse(existingUser, false, false));
             return;
         }
         Random random = new Random();
@@ -56,7 +55,7 @@ public class CommandProcessor {
         log.info("{}님이 로그인 했습니다!", username);
         log.info("현재 접속 유저 : {}", field.getLoginUsernames());
         SocketManager.setSocket(username, clientSocket);
-        SocketManager.sendResponse(clientSocket, LoginResponse(currentUser, true));
+        SocketManager.sendResponse(clientSocket, LoginResponse(currentUser, true, false));
     }
 
     public synchronized void processLogout() {

@@ -32,11 +32,12 @@ public class Response {
         return coords;
     }
 
-    public static Response LoginResponse(User user, boolean isNew) {
+    public static Response LoginResponse(User user, boolean isNew, boolean dupLogin) {
         if (isNew)
             return new Response(user.username + "님이 로그인 했습니다! 현재 좌표 (" + user.x + "," + user.y + ")", makeCoords());
         else
-            return new Response(user.username + "님이 재로그인 했습니다! 돌아오셨군요! 이전 로그아웃 당시 좌표 및 현재 좌표 (" + user.x + "," + user.y + ")", makeCoords());
+            if (dupLogin) return new Response(user.username + "님은 현재 접속중입니다!", makeCoords());
+            else return new Response(user.username + "님이 재로그인 했습니다! 돌아오셨군요! 이전 로그아웃 당시 좌표 및 현재 좌표 (" + user.x + "," + user.y + ")", makeCoords());
     }
 
     public static Response FieldResponse() {

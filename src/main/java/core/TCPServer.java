@@ -40,6 +40,7 @@ public class TCPServer {
     public void start() {
         log.info("최대 동시 접속 유지 가능 수 : {}", MAX_CONCURRENT_PLAYER_NUM);
         log.info("MUD 게임 서버 ON - 요청 대기 중");
+        log.info("All copyrights reserved by 배성흥");
         try {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
